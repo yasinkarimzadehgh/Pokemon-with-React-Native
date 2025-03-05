@@ -18,7 +18,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 function PokemonDetail() {
     const route = useRoute();
-    const { pokemonName, pokemonSprite } = route.params;
+    const { pokemonName } = route.params;
     const { pokemonDetail, loading, error } = useSelector(state => state.pokemonDetail);
     const { pokemonList } = useSelector(state => state.abilityDetail);
 
@@ -144,9 +144,9 @@ function PokemonDetail() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.imageContainer}>
-                    {pokemonSprite && (
+                    {pokemonDetail.sprites && (
                         <Image
-                            source={{ uri: pokemonSprite }}
+                            source={{ uri: pokemonDetail.sprites.other['official-artwork'].front_default || pokemonDetail.sprites.front_default }}
                             style={styles.image}
                             resizeMode="contain"
                         />
@@ -197,7 +197,7 @@ function PokemonDetail() {
 const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
-        backgroundColor: "#ebeaea",
+        backgroundColor: "#f5f5f5",
     },
     container: {
         flexGrow: 1,

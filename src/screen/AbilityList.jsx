@@ -43,7 +43,6 @@ const AbilityList = () => {
         });
     };
 
-
     // Error Handling
     const handleError = (error, message) => {
         console.error(error);

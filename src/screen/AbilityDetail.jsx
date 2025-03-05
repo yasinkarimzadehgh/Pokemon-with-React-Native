@@ -66,7 +66,7 @@ function AbilityDetail() {
             <TouchableOpacity
                 style={styles.pokemonCardInner}
                 activeOpacity={0.3}
-                onPress={() => navigation.navigate("POKEMON_DETAILS", { pokemonName: pokemon.name, pokemonSprite: pokemon.sprite })}
+                onPress={() => navigation.navigate("POKEMON_DETAILS", { pokemonName: pokemon.name })}
             >
                 {pokemon.sprite ? (
                     <Image source={{ uri: pokemon.sprite }} style={styles.pokemonSprite} />
