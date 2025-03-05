@@ -36,6 +36,7 @@ const App = () => {
         <Provider store={store}>
           <NavigationContainer>
             <Tab.Navigator
+              initialRouteName="ABILITY_LIST"
               screenOptions={{
                 headerShown: false,
                 tabBarShowLabel: false,

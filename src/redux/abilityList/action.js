@@ -8,6 +8,7 @@ export const SHOW_LESS_ABILITY_REQUEST = "SHOW_LESS_ABILITY_REQUEST"
 export const SHOW_LESS_ABILITY_SUCCESS = "SHOW_LESS_ABILITY_SUCCESS"
 export const SHOW_LESS_ABILITY_FAILURE = "SHOW_LESS_ABILITY_FAILURE"
 
+
 export const getAbilitiesStored = (data) => ({
     type: GET_ABILITIES_STORED,
     payload: data,
@@ -41,4 +42,3 @@ export const showLessAbilitiesFailure = (error) => ({
     type: SHOW_LESS_ABILITY_FAILURE,
     payload: error,
 })
-
