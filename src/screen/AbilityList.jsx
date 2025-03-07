@@ -20,7 +20,7 @@ import {
     showMoreAbilitiesRequest,
     showLessAbilitiesRequest,
     showMoreAbilitiesFailure
-} from "../redux/abilityList/action";
+} from "../redux/abilityList/abilityListAction";
 
 // Constants
 const STORAGE_KEY = "pokemonAbilitiesData";

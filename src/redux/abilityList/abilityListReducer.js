@@ -6,7 +6,7 @@ import {
     SHOW_LESS_ABILITY_REQUEST,
     SHOW_LESS_ABILITY_SUCCESS,
     SHOW_LESS_ABILITY_FAILURE,
-} from "./action"
+} from "./abilityListAction"
 
 const initialState = {
     abilities: [],

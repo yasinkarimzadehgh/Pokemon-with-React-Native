@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { getPokemonListRequest } from "../redux/abilityDetail/action";
+import { getPokemonListRequest } from "../redux/abilityDetail/abilityDetailAction";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 

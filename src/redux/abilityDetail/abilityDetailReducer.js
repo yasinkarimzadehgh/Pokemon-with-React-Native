@@ -1,31 +1,30 @@
-// reducer.js
 import {
-    GET_POKEMON_DETAIL_REQUEST,
-    GET_POKEMON_DETAIL_SUCCESS,
-    GET_POKEMON_DETAIL_FAILURE,
-} from './action';
+    GET_ABILITY_DETAIL_REQUEST,
+    GET_ABILITY_DETAIL_SUCCESS,
+    GET_ABILITY_DETAIL_FAILURE,
+} from './abilityDetailAction';
 
 const initialState = {
-    pokemonDetail: null,
+    pokemonList: [],
     loading: false,
     error: null,
 };
 
-const pokemonDetailReducer = (state = initialState, action) => {
+const abilityDetailReducer = (state = initialState, action) => {
     switch (action.type) {
-        case GET_POKEMON_DETAIL_REQUEST:
+        case GET_ABILITY_DETAIL_REQUEST:
             return {
                 ...state,
                 loading: true,
                 error: null,
             };
-        case GET_POKEMON_DETAIL_SUCCESS:
+        case GET_ABILITY_DETAIL_SUCCESS:
             return {
                 ...state,
-                pokemonDetail: action.payload,
+                pokemonList: action.payload,
                 loading: false,
             };
-        case GET_POKEMON_DETAIL_FAILURE:
+        case GET_ABILITY_DETAIL_FAILURE:
             return {
                 ...state,
                 error: action.payload,
@@ -36,4 +35,4 @@ const pokemonDetailReducer = (state = initialState, action) => {
     }
 };
 
-export default pokemonDetailReducer;
+export default abilityDetailReducer;

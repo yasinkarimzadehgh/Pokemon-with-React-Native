@@ -3,7 +3,7 @@ import {
     GET_ABILITY_DETAIL_REQUEST,
     GET_ABILITY_DETAIL_SUCCESS,
     GET_ABILITY_DETAIL_FAILURE,
-} from './action.js';
+} from './abilityDetailAction';
 import axios from 'axios';
 
 export function* watchAbilityDetailSaga() {

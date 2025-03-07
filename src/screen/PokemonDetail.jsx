@@ -10,7 +10,7 @@ import {
     StatusBar
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { getPokemonDetailRequest } from '../redux/pokemonDetail/action';
+import { getPokemonDetailRequest } from '../redux/pokemonDetail/pokemonDetailAction';
 import { useRoute } from '@react-navigation/native';
 import { useNavigation } from "@react-navigation/native";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';

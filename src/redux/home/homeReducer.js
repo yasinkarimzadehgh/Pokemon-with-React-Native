@@ -6,7 +6,7 @@ import {
     USER_UPDATE_SUCCESS,
     USER_UPDATE_FAILURE,
     USER_LOGOUT,
-} from "./action";
+} from "./homeAction";
 
 const initialState = {
     userData: null,

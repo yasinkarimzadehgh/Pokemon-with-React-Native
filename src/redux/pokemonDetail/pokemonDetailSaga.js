@@ -4,7 +4,7 @@ import {
     GET_POKEMON_DETAIL_REQUEST,
     getPokemonDetailSuccess,
     getPokemonDetailFailure,
-} from './action';
+} from './pokemonDetailAction';
 
 export function* watchPokemonDetailSaga() {
     yield takeLatest(GET_POKEMON_DETAIL_REQUEST, getPokemonDetailSaga);

@@ -2,13 +2,13 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
 
-import abilityListReducer from './abilityList/reducer';
-import abilityDetailReducer from './abilityDetail/reducer';
-import pokemonDetailReducer from './pokemonDetail/reducer';
+import abilityListReducer from './abilityList/abilityListReducer';
+import abilityDetailReducer from './abilityDetail/abilityDetailReducer';
+import pokemonDetailReducer from './pokemonDetail/pokemonDetailReducer';
 
-import { watchAbilityListSaga } from './abilityList/saga';
-import { watchAbilityDetailSaga } from './abilityDetail/saga';
-import { watchPokemonDetailSaga } from './pokemonDetail/saga';
+import { watchAbilityListSaga } from './abilityList/abilityListSaga';
+import { watchAbilityDetailSaga } from './abilityDetail/abilityDetailSaga';
+import { watchPokemonDetailSaga } from './pokemonDetail/pokemonDetailSaga';
 
 const rootReducer = combineReducers({
     abilityList: abilityListReducer,

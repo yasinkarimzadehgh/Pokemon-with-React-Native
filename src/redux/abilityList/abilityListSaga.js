@@ -7,7 +7,7 @@ import {
     showMoreAbilitiesFailure,
     showLessAbilitiesSuccess,
     showLessAbilitiesFailure,
-} from "./action"
+} from "./abilityListAction"
 import axios from "axios"
 
 const STORAGE_KEY = "pokemonAbilitiesData"
