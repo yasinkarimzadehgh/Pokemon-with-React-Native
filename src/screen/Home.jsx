@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -6,181 +7,142 @@ import {
     TouchableOpacity,
     Image,
     StyleSheet,
-    Platform,
     Alert,
     ScrollView,
     KeyboardAvoidingView,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 
-// Custom Components
-const ThemeButton = React.memo(({ label, active, onPress }) => (
+const ThemeButton = ({ label, active, onPress }) => (
     <TouchableOpacity
-        style={[
-            styles.themeButton,
-            active && styles.themeButtonActive
-        ]}
+        style={[styles.themeButton, active && styles.themeButtonActive]}
         onPress={onPress}
     >
-        <Text style={[
-            styles.themeButtonText,
-            active && styles.themeButtonTextActive
-        ]}>
+        <Text style={[styles.themeButtonText, active && styles.themeButtonTextActive]}>
             {label}
         </Text>
     </TouchableOpacity>
-));
+);
 
 const Home = () => {
     const [picProfile, setPicProfile] = useState(null);
     const [username, setUsername] = useState('');
     const [theme, setTheme] = useState('light');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    console.log('picProfile', picProfile)
 
-    // Memoized image picker options
-    const imagePickerOptions = useMemo(() => ({
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('http://192.99.8.135/pokemon_api.php?route=get_info&user_id=17');
+                const { name, picture, theme } = response.data;
+
+                setUsername(name);
+                setPicProfile(picture);
+                setTheme(theme);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        // Fetch data initially
+        fetchData();
+
+        // Set interval to fetch data every 50 second
+        const intervalId = setInterval(fetchData, 50000);
+
+        // Cleanup function to clear interval when component unmounts
+        return () => clearInterval(intervalId);
+    }, []);
+
+
+
+    const imagePickerOptions = {
         mediaType: 'photo',
         includeBase64: false,
         maxHeight: 2000,
         maxWidth: 2000,
         quality: 0.8,
-    }), []);
+    };
 
-    // Optimized image picker with error handling
-    const handleImagePicker = useCallback(() => {
+    const handleImagePicker = () => {
         launchImageLibrary(imagePickerOptions, (response) => {
             if (response.didCancel) return;
 
             if (response.errorCode) {
-                Alert.alert(
-                    'Image Selection Error',
-                    response.errorMessage || 'Failed to select image'
-                );
+                Alert.alert('Image Selection Error', response.errorMessage || 'Failed to select image');
                 return;
             }
 
             const image = response.assets?.[0];
             if (image) {
-                // Validate image size (optional)
-                const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+                const maxSizeInBytes = 5 * 1024 * 1024;
                 if (image.fileSize > maxSizeInBytes) {
-                    Alert.alert(
-                        'Image Too Large',
-                        'Please select an image smaller than 5MB'
-                    );
+                    Alert.alert('Image Too Large', 'Please select an image smaller than 5MB');
                     return;
                 }
-                setPicProfile(image);
+                setPicProfile(image.uri);
             }
         });
-    }, [imagePickerOptions]);
+    };
 
-    // Comprehensive form validation
-    const validateForm = useCallback(() => {
+    const validateForm = () => {
         const errors = [];
-
-        if (!username.trim()) {
-            errors.push('Username is required');
-        }
-
-        if (username.length < 3) {
-            errors.push('Username must be at least 3 characters');
-        }
-
-        if (!picProfile) {
-            errors.push('Profile picture is required');
-        }
-
+        if (!username.trim()) errors.push('Username is required');
+        if (username.length < 3) errors.push('Username must be at least 3 characters');
+        if (!picProfile) errors.push('Profile picture is required');
         return errors;
-    }, [username, picProfile]);
+    };
 
-    // Efficient submit handler
-    const handleSubmit = useCallback(() => {
-        // Prevent multiple submissions
+    const handleSubmit = async () => {
         if (isSubmitting) return;
-
-        // Validate form
         const validationErrors = validateForm();
         if (validationErrors.length > 0) {
-            Alert.alert(
-                'Validation Errors',
-                validationErrors.join('\n')
-            );
+            Alert.alert('Validation Errors', validationErrors.join('\n'));
             return;
         }
-
-        // Start submission
         setIsSubmitting(true);
 
-        // Prepare submission data
-        const submissionData = {
-            username: username.trim(),
-            theme,
-            profileImage: picProfile ? {
-                uri: picProfile.uri,
-                type: picProfile.type,
-                name: picProfile.fileName || 'photo.jpg'
-            } : null
-        };
+        try {
+            const formData = new FormData();
+            formData.append('name', username.trim());
+            formData.append('theme', theme);
+            formData.append('picture', {
+                uri: picProfile,
+                type: 'image/jpeg',
+                name: 'profile.jpg',
+            });
 
+            await axios.post('http://192.99.8.135/pokemon_api.php?route=set_info&user_id=17', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
 
-        // Simulate async submission
-        setTimeout(() => {
-            console.log('Submission Data:', submissionData);
-
-            // Reset form and show success
-            Alert.alert(
-                'Success',
-                'Profile updated successfully!',
-                [{
-                    text: 'OK', onPress: () => {
-                        setIsSubmitting(false);
-                        // Additional post-submission logic can go here
-                    }
-                }]
-            );
-        }, 1000);
-    }, [username, theme, picProfile, isSubmitting, validateForm]);
-
-    // Render image preview or placeholder
-    const renderImagePicker = useMemo(() => {
-        if (picProfile) {
-            return (
-                <Image
-                    source={{ uri: picProfile.uri }}
-                    style={styles.profileImage}
-                />
-            );
+            Alert.alert('Success', 'Profile updated successfully!', [{
+                text: 'OK', onPress: () => setIsSubmitting(false),
+            }]);
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            Alert.alert('Submission Error', 'Failed to submit form. Please try again.');
+            setIsSubmitting(false);
         }
-        return (
-            <View style={styles.imagePlaceholder}>
-                <Text style={styles.imagePickerText}>
-                    Select Profile Picture
-                </Text>
-            </View>
-        );
-    }, [picProfile]);
+    };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <ScrollView
-                contentContainerStyle={styles.scrollContainer}
-                keyboardShouldPersistTaps="handled"
-            >
+        <KeyboardAvoidingView style={styles.container}>
+            <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
                 <Text style={styles.title}>Profile Settings</Text>
 
-                {/* Profile Image Picker */}
-                <TouchableOpacity
-                    onPress={handleImagePicker}
-                    style={styles.imagePickerContainer}
-                >
-                    {renderImagePicker}
+                <TouchableOpacity onPress={handleImagePicker} style={styles.imagePickerContainer}>
+                    {picProfile ? (
+                        <Image source={{ uri: picProfile }} style={styles.profileImage} />
+                    ) : (
+                        <View style={styles.imagePlaceholder}>
+                            <Text style={styles.imagePickerText}>Select Profile Picture</Text>
+                        </View>
+                    )}
                 </TouchableOpacity>
 
-                {/* Username Input */}
                 <TextInput
                     style={styles.input}
                     placeholder="Enter Username"
@@ -193,35 +155,20 @@ const Home = () => {
                     returnKeyType="done"
                 />
 
-                {/* Theme Selector */}
                 <View style={styles.themeContainer}>
                     <Text style={styles.themeLabel}>Choose Theme</Text>
                     <View style={styles.themeButtonContainer}>
-                        <ThemeButton
-                            label="Light"
-                            active={theme === 'light'}
-                            onPress={() => setTheme('light')}
-                        />
-                        <ThemeButton
-                            label="Dark"
-                            active={theme === 'dark'}
-                            onPress={() => setTheme('dark')}
-                        />
+                        <ThemeButton label="Light" active={theme === 'light'} onPress={() => setTheme('light')} />
+                        <ThemeButton label="Dark" active={theme === 'dark'} onPress={() => setTheme('dark')} />
                     </View>
                 </View>
 
-                {/* Submit Button */}
                 <TouchableOpacity
-                    style={[
-                        styles.submitButton,
-                        isSubmitting && styles.submitButtonDisabled
-                    ]}
+                    style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
                     onPress={handleSubmit}
                     disabled={isSubmitting}
                 >
-                    <Text style={styles.submitButtonText}>
-                        {isSubmitting ? 'Updating...' : 'Submit'}
-                    </Text>
+                    <Text style={styles.submitButtonText}>{isSubmitting ? 'Updating...' : 'Submit'}</Text>
                 </TouchableOpacity>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -231,7 +178,6 @@ const Home = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
     },
     scrollContainer: {
         flexGrow: 1,
@@ -335,4 +281,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default React.memo(Home);
+export default Home;
