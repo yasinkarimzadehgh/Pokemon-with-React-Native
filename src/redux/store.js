@@ -16,7 +16,7 @@ const rootReducer = combineReducers({
     abilityList: abilityListReducer,
     abilityDetail: abilityDetailReducer,
     pokemonDetail: pokemonDetailReducer,
-    user: userReducer,
+    userProfile: userReducer,
 });
 
 function* rootSaga() {

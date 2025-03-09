@@ -42,7 +42,7 @@ const Home = () => {
         theme: storeTheme,
         loading,
         error
-    } = useSelector(state => state.user);
+    } = useSelector(state => state.userProfile);
 
     // Fetch profile data on component mount
     useEffect(() => {
@@ -154,7 +154,7 @@ const Home = () => {
                         <Image
                             source={getImageSource()}
                             style={styles.profileImage}
-                            key={Date.now()} // Force refresh image
+                            key={Date.now()}
                         />
                     ) : (
                         <View style={styles.imagePlaceholder}>

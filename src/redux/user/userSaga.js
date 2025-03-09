@@ -48,7 +48,7 @@ function* syncProfileSaga() {
 // Worker Saga: Update profile data
 function* updateProfileSaga(action) {
     try {
-        const { formData } = action.payload;
+        const { formData, onSuccess, onFailure } = action.payload;
 
         yield call(axios.post,
             'http://192.99.8.135/pokemon_api.php?route=set_info&user_id=17',
@@ -60,8 +60,16 @@ function* updateProfileSaga(action) {
 
         yield put(updateProfileSuccess());
 
+        if (onSuccess) {
+            onSuccess();
+        }
+
     } catch (error) {
         yield put(updateProfileFailure(error.message || 'Failed to update profile'));
+
+        if (action.payload.onFailure) {
+            action.payload.onFailure(error.message);
+        }
     }
 }
 
