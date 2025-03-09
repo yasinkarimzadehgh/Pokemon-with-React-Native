@@ -16,22 +16,41 @@ import {
     syncProfileRequest,
     updateProfileRequest
 } from '../redux/user/userAction';
+import { useTheme } from '../theme/ThemeContext';
 
-const ThemeButton = ({ label, active, onPress }) => (
-    <TouchableOpacity
-        style={[styles.themeButton, active && styles.themeButtonActive]}
-        onPress={onPress}
-    >
-        <Text style={[styles.themeButtonText, active && styles.themeButtonTextActive]}>
-            {label}
-        </Text>
-    </TouchableOpacity>
-);
+const ThemeButton = ({ label, active, onPress }) => {
+    const { theme } = useTheme();
+
+    return (
+        <TouchableOpacity
+            style={[
+                styles.themeButton,
+                {
+                    backgroundColor: active ? theme.primary : theme.card,
+                    borderColor: active ? theme.primary : theme.border
+                }
+            ]}
+            onPress={onPress}
+        >
+            <Text
+                style={[
+                    styles.themeButtonText,
+                    { color: active ? theme.headerText : theme.text }
+                ]}
+            >
+                {label}
+            </Text>
+        </TouchableOpacity>
+    );
+};
 
 const Home = () => {
+    // Get theme from context
+    const { theme, setThemeMode } = useTheme();
+
     // Local state for form handling
     const [username, setUsername] = useState('');
-    const [theme, setTheme] = useState('light');
+    const [themeMode, setLocalThemeMode] = useState('light');
     const [localPicProfile, setLocalPicProfile] = useState(null);
 
     // Get data from Redux store
@@ -60,7 +79,7 @@ const Home = () => {
     useEffect(() => {
         if (storeUsername) setUsername(storeUsername);
         if (storePicProfile) setLocalPicProfile(storePicProfile);
-        if (storeTheme) setTheme(storeTheme);
+        if (storeTheme) setLocalThemeMode(storeTheme);
     }, [storeUsername, storePicProfile, storeTheme]);
 
     const imagePickerOptions = {
@@ -107,10 +126,13 @@ const Home = () => {
             return;
         }
 
+        // Apply theme change immediately
+        setThemeMode(themeMode);
+
         // Prepare form data
         const formData = new FormData();
         formData.append('name', username.trim());
-        formData.append('theme', theme);
+        formData.append('theme', themeMode);
         formData.append('picture', {
             uri: localPicProfile,
             type: 'image/jpeg',
@@ -144,31 +166,68 @@ const Home = () => {
         return { uri: localPicProfile };
     };
 
+    // Create dynamic styles based on theme
+    const dynamicStyles = {
+        container: {
+            backgroundColor: theme.background,
+        },
+        title: {
+            color: theme.text,
+        },
+        imagePlaceholder: {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+        },
+        imagePickerText: {
+            color: theme.textMuted,
+        },
+        profileImage: {
+            borderColor: theme.primary,
+        },
+        input: {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.inputBorder,
+            color: theme.text,
+        },
+        themeLabel: {
+            color: theme.text,
+        },
+        submitButton: {
+            backgroundColor: theme.primary,
+        },
+        submitButtonDisabled: {
+            backgroundColor: theme.buttonDisabled,
+        },
+        errorText: {
+            color: theme.error,
+        }
+    };
+
     return (
-        <KeyboardAvoidingView style={styles.container}>
+        <KeyboardAvoidingView style={[styles.container, dynamicStyles.container]}>
             <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-                <Text style={styles.title}>Profile Settings</Text>
+                <Text style={[styles.title, dynamicStyles.title]}>Profile Settings</Text>
 
                 <TouchableOpacity onPress={handleImagePicker} style={styles.imagePickerContainer}>
                     {localPicProfile ? (
                         <Image
                             source={getImageSource()}
-                            style={styles.profileImage}
+                            style={[styles.profileImage, dynamicStyles.profileImage]}
                             key={Date.now()}
                         />
                     ) : (
-                        <View style={styles.imagePlaceholder}>
-                            <Text style={styles.imagePickerText}>Select Profile Picture</Text>
+                        <View style={[styles.imagePlaceholder, dynamicStyles.imagePlaceholder]}>
+                            <Text style={[styles.imagePickerText, dynamicStyles.imagePickerText]}>Select Profile Picture</Text>
                         </View>
                     )}
                 </TouchableOpacity>
 
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, dynamicStyles.input]}
                     placeholder="Enter Username"
                     value={username}
                     onChangeText={setUsername}
-                    placeholderTextColor="#888"
+                    placeholderTextColor={theme.textMuted}
                     autoCorrect={false}
                     autoCapitalize="none"
                     maxLength={20}
@@ -176,15 +235,27 @@ const Home = () => {
                 />
 
                 <View style={styles.themeContainer}>
-                    <Text style={styles.themeLabel}>Choose Theme</Text>
+                    <Text style={[styles.themeLabel, dynamicStyles.themeLabel]}>Choose Theme</Text>
                     <View style={styles.themeButtonContainer}>
-                        <ThemeButton label="Light" active={theme === 'light'} onPress={() => setTheme('light')} />
-                        <ThemeButton label="Dark" active={theme === 'dark'} onPress={() => setTheme('dark')} />
+                        <ThemeButton
+                            label="Light"
+                            active={themeMode === 'light'}
+                            onPress={() => setLocalThemeMode('light')}
+                        />
+                        <ThemeButton
+                            label="Dark"
+                            active={themeMode === 'dark'}
+                            onPress={() => setLocalThemeMode('dark')}
+                        />
                     </View>
                 </View>
 
                 <TouchableOpacity
-                    style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+                    style={[
+                        styles.submitButton,
+                        dynamicStyles.submitButton,
+                        loading && dynamicStyles.submitButtonDisabled
+                    ]}
                     onPress={handleSubmit}
                     disabled={loading}
                 >
@@ -192,7 +263,7 @@ const Home = () => {
                 </TouchableOpacity>
 
                 {error && (
-                    <Text style={styles.errorText}>{error}</Text>
+                    <Text style={[styles.errorText, dynamicStyles.errorText]}>{error}</Text>
                 )}
             </ScrollView>
         </KeyboardAvoidingView>
@@ -213,7 +284,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 30,
-        color: '#333',
     },
     imagePickerContainer: {
         alignSelf: 'center',
@@ -223,33 +293,27 @@ const styles = StyleSheet.create({
         width: 180,
         height: 180,
         borderRadius: 90,
-        backgroundColor: '#e1e1e1',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
         borderStyle: 'dashed',
-        borderColor: '#999',
     },
     profileImage: {
         width: 180,
         height: 180,
         borderRadius: 90,
         borderWidth: 3,
-        borderColor: "#2980b9",
     },
     imagePickerText: {
-        color: '#888',
         textAlign: 'center',
         fontSize: 16,
     },
     input: {
         height: 50,
-        borderColor: '#ddd',
         borderWidth: 1,
         borderRadius: 10,
         paddingHorizontal: 15,
         marginBottom: 20,
-        backgroundColor: 'white',
         fontSize: 16,
     },
     themeContainer: {
@@ -258,7 +322,6 @@ const styles = StyleSheet.create({
     themeLabel: {
         fontSize: 18,
         marginBottom: 10,
-        color: '#333',
         fontWeight: '500',
     },
     themeButtonContainer: {
@@ -270,33 +333,19 @@ const styles = StyleSheet.create({
         padding: 12,
         marginHorizontal: 5,
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 10,
-        backgroundColor: 'white',
-    },
-    themeButtonActive: {
-        backgroundColor: "#2980b9",
-        borderColor: "#2980b9",
     },
     themeButtonText: {
         textAlign: 'center',
-        color: '#333',
         fontSize: 16,
         fontWeight: '500',
     },
-    themeButtonTextActive: {
-        color: 'white',
-    },
     submitButton: {
-        backgroundColor: "#2980b9",
         height: 50,
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 10,
-    },
-    submitButtonDisabled: {
-        backgroundColor: '#a0c4e8',
     },
     submitButtonText: {
         color: 'white',
@@ -304,7 +353,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     errorText: {
-        color: 'red',
         textAlign: 'center',
         marginTop: 10,
     }

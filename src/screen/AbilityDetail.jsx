@@ -13,9 +13,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPokemonListRequest } from "../redux/abilityDetail/abilityDetailAction";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
+import { useTheme } from "../theme/ThemeContext";
 
 function AbilityDetail() {
+    const { theme } = useTheme();
     const route = useRoute();
     const { abilityName } = route.params || { abilityName: "stench" };
 
@@ -52,16 +53,87 @@ function AbilityDetail() {
         return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     };
 
+    // Create dynamic styles based on theme
+    const dynamicStyles = {
+        container: {
+            backgroundColor: theme.background,
+        },
+        header: {
+            backgroundColor: theme.headerBackground,
+        },
+        abilityName: {
+            color: theme.headerText,
+        },
+        navButton: {
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        },
+        navText: {
+            color: theme.headerText,
+        },
+        disabledButton: {
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        },
+        disabledText: {
+            color: theme.textMuted,
+        },
+        indexIndicator: {
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        },
+        indexText: {
+            color: theme.headerText,
+        },
+        infoCard: {
+            backgroundColor: theme.infoCard,
+            borderLeftColor: theme.primary,
+        },
+        infoText: {
+            color: theme.text,
+        },
+        highlightText: {
+            color: theme.primary,
+        },
+        pokemonCount: {
+            color: theme.textMuted,
+        },
+        pokemonCard: {
+            backgroundColor: theme.card,
+        },
+        pokemonName: {
+            color: theme.text,
+        },
+        primaryAbility: {
+            color: theme.text,
+        },
+        abilityLabel: {
+            color: theme.textMuted,
+        },
+        otherAbilities: {
+            color: theme.text,
+        },
+        emptyText: {
+            color: theme.textMuted,
+        },
+        loadingText: {
+            color: theme.textMuted,
+        },
+        errorText: {
+            color: theme.error,
+        },
+        retryButton: {
+            backgroundColor: theme.error,
+        },
+    };
+
     const renderEmptyList = () => (
         <View style={styles.emptyContainer}>
-            <Icon name="ghost" size={60} color="#bdc3c7" style={styles.emptyIcon} />
-            <Text style={styles.emptyText}>No Pokémon found with this ability</Text>
+            <Icon name="ghost" size={60} color={theme.textMuted} style={styles.emptyIcon} />
+            <Text style={[styles.emptyText, dynamicStyles.emptyText]}>No Pokémon found with this ability</Text>
         </View>
     );
 
     const renderPokemonItem = ({ item: pokemon }) => (
         <View
-            style={styles.pokemonCard}
+            style={[styles.pokemonCard, dynamicStyles.pokemonCard]}
         >
             <TouchableOpacity
                 style={styles.pokemonCardInner}
@@ -71,13 +143,13 @@ function AbilityDetail() {
                 {pokemon.sprite ? (
                     <Image source={{ uri: pokemon.sprite }} style={styles.pokemonSprite} />
                 ) : (
-                    <View style={styles.noImage}>
-                        <MaterialIcons name="image-not-supported" size={40} color="#bdc3c7" />
+                    <View style={[styles.noImage, { backgroundColor: theme.isDark ? '#2A2A2A' : '#f4f4f4' }]}>
+                        <MaterialIcons name="image-not-supported" size={40} color={theme.textMuted} />
                     </View>
                 )}
 
                 <View style={styles.pokemonInfo}>
-                    <Text style={styles.pokemonName}>
+                    <Text style={[styles.pokemonName, dynamicStyles.pokemonName]}>
                         {pokemon.name
                             .split('-')
                             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -85,14 +157,14 @@ function AbilityDetail() {
                     </Text>
 
                     <View style={styles.abilitiesContainer}>
-                        <Text style={styles.primaryAbility}>
-                            <Text style={styles.abilityLabel}>Primary: </Text>
+                        <Text style={[styles.primaryAbility, dynamicStyles.primaryAbility]}>
+                            <Text style={[styles.abilityLabel, dynamicStyles.abilityLabel]}>Primary: </Text>
                             {formatAbilityName(abilityName)}
                         </Text>
 
                         {pokemon.abilities && pokemon.abilities.length > 1 && (
-                            <Text style={styles.otherAbilities}>
-                                <Text style={styles.abilityLabel}>Others: </Text>
+                            <Text style={[styles.otherAbilities, dynamicStyles.otherAbilities]}>
+                                <Text style={[styles.abilityLabel, dynamicStyles.abilityLabel]}>Others: </Text>
                                 {pokemon.abilities
                                     .filter(ability => ability.name !== abilityName)
                                     .map(ability => formatAbilityName(ability.name))
@@ -103,44 +175,43 @@ function AbilityDetail() {
                 </View>
 
                 <View style={styles.arrowContainer}>
-                    <MaterialIcons name="arrow-forward-ios" size={20} color="#95a5a6" />
+                    <MaterialIcons name="arrow-forward-ios" size={20} color={theme.textMuted} />
                 </View>
             </TouchableOpacity>
         </View>
     );
 
     return (
-        <View style={styles.container}>
-
-            <View style={styles.header}>
+        <View style={[styles.container, dynamicStyles.container]}>
+            <View style={[styles.header, dynamicStyles.header]}>
                 <View style={styles.headerContent}>
-                    <Text style={styles.abilityName}>
+                    <Text style={[styles.abilityName, dynamicStyles.abilityName]}>
                         {formatAbilityName(abilityName)}
                     </Text>
 
                     <View style={styles.navigationContainer}>
                         <TouchableOpacity
-                            style={[styles.navButton, isPrevDisabled && styles.disabledButton]}
+                            style={[styles.navButton, dynamicStyles.navButton, isPrevDisabled && dynamicStyles.disabledButton]}
                             onPress={handlePrev}
                             disabled={isPrevDisabled}
                         >
-                            <MaterialIcons name="arrow-back-ios" size={18} color={isPrevDisabled ? "#95a5a6" : "#fff"} />
-                            <Text style={[styles.navText, isPrevDisabled && styles.disabledText]}>Prev</Text>
+                            <MaterialIcons name="arrow-back-ios" size={18} color={isPrevDisabled ? theme.textMuted : theme.headerText} />
+                            <Text style={[styles.navText, dynamicStyles.navText, isPrevDisabled && dynamicStyles.disabledText]}>Prev</Text>
                         </TouchableOpacity>
 
-                        <View style={styles.indexIndicator}>
-                            <Text style={styles.indexText}>
+                        <View style={[styles.indexIndicator, dynamicStyles.indexIndicator]}>
+                            <Text style={[styles.indexText, dynamicStyles.indexText]}>
                                 {currentIndex + 1}/{abilities?.length || 0}
                             </Text>
                         </View>
 
                         <TouchableOpacity
-                            style={[styles.navButton, isNextDisabled && styles.disabledButton]}
+                            style={[styles.navButton, dynamicStyles.navButton, isNextDisabled && dynamicStyles.disabledButton]}
                             onPress={handleNext}
                             disabled={isNextDisabled}
                         >
-                            <Text style={[styles.navText, isNextDisabled && styles.disabledText]}>Next</Text>
-                            <MaterialIcons name="arrow-forward-ios" size={18} color={isNextDisabled ? "#95a5a6" : "#fff"} />
+                            <Text style={[styles.navText, dynamicStyles.navText, isNextDisabled && dynamicStyles.disabledText]}>Next</Text>
+                            <MaterialIcons name="arrow-forward-ios" size={18} color={isNextDisabled ? theme.textMuted : theme.headerText} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -149,15 +220,15 @@ function AbilityDetail() {
             {/* Main Content */}
             {loading ? (
                 <View style={styles.loaderContainer}>
-                    <ActivityIndicator size="large" color="#3498db" />
-                    <Text style={styles.loadingText}>Loading Pokémon data...</Text>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                    <Text style={[styles.loadingText, dynamicStyles.loadingText]}>Loading Pokémon data...</Text>
                 </View>
             ) : error ? (
                 <View style={styles.errorContainer}>
-                    <Icon name="exclamation-circle" size={60} color="#e74c3c" style={styles.errorIcon} />
-                    <Text style={styles.errorText}>{error}</Text>
+                    <Icon name="exclamation-circle" size={60} color={theme.error} style={styles.errorIcon} />
+                    <Text style={[styles.errorText, dynamicStyles.errorText]}>{error}</Text>
                     <TouchableOpacity
-                        style={styles.retryButton}
+                        style={[styles.retryButton, dynamicStyles.retryButton]}
                         onPress={() => dispatch(getPokemonListRequest(`https://pokeapi.co/api/v2/ability/${abilityName}`))}
                     >
                         <Text style={styles.retryText}>Retry</Text>
@@ -173,13 +244,13 @@ function AbilityDetail() {
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={
                         <View style={styles.listHeader}>
-                            <View style={styles.infoCard}>
-                                <Icon name="info-circle" size={20} color="#3498db" style={styles.infoIcon} />
-                                <Text style={styles.infoText}>
-                                    Pokémon with the <Text style={styles.highlightText}>{formatAbilityName(abilityName)}</Text> ability
+                            <View style={[styles.infoCard, dynamicStyles.infoCard]}>
+                                <Icon name="info-circle" size={20} color={theme.primary} style={styles.infoIcon} />
+                                <Text style={[styles.infoText, dynamicStyles.infoText]}>
+                                    Pokémon with the <Text style={[styles.highlightText, dynamicStyles.highlightText]}>{formatAbilityName(abilityName)}</Text> ability
                                 </Text>
                             </View>
-                            <Text style={styles.pokemonCount}>
+                            <Text style={[styles.pokemonCount, dynamicStyles.pokemonCount]}>
                                 {pokemonList?.length || 0} Pokémon found
                             </Text>
                         </View>
@@ -193,10 +264,8 @@ function AbilityDetail() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#ebeaea",
     },
     header: {
-        backgroundColor: "#2980b9",
         paddingTop: 20,
         paddingHorizontal: 16,
         borderBottomLeftRadius: 20,
@@ -210,9 +279,7 @@ const styles = StyleSheet.create({
     abilityName: {
         fontSize: 20,
         fontWeight: "bold",
-        color: "#fff",
         textAlign: 'center'
-
     },
     navigationContainer: {
         flexDirection: 'row',
@@ -225,28 +292,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 8,
         paddingHorizontal: 12,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
         borderRadius: 20,
     },
     navText: {
-        color: '#fff',
         fontSize: 14,
         fontWeight: '600',
     },
-    disabledButton: {
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    },
-    disabledText: {
-        color: '#95a5a6',
-    },
     indexIndicator: {
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
         paddingVertical: 5,
         paddingHorizontal: 11,
         borderRadius: 12,
     },
     indexText: {
-        color: '#fff',
         fontSize: 12,
         fontWeight: '600',
     },
@@ -259,34 +316,28 @@ const styles = StyleSheet.create({
     infoCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#ebf7fd',
         padding: 12,
         marginBottom: 8,
         borderRadius: 10,
         borderLeftWidth: 4,
-        borderLeftColor: '#3498db',
     },
     infoIcon: {
         marginRight: 10,
     },
     infoText: {
         fontSize: 14,
-        color: '#2c3e50',
         flex: 1,
     },
     highlightText: {
         fontWeight: 'bold',
-        color: '#3498db',
     },
     pokemonCount: {
         fontSize: 14,
-        color: '#7f8c8d',
         marginBottom: 8,
     },
     pokemonCard: {
         marginBottom: 16,
         borderRadius: 12,
-        backgroundColor: '#ffffff',
     },
     pokemonCardInner: {
         flexDirection: 'row',
@@ -303,7 +354,6 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#f4f4f4',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -314,7 +364,6 @@ const styles = StyleSheet.create({
     pokemonName: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#2c3e50',
         marginBottom: 4,
     },
     abilitiesContainer: {
@@ -322,16 +371,13 @@ const styles = StyleSheet.create({
     },
     primaryAbility: {
         fontSize: 14,
-        color: '#2c3e50',
         marginBottom: 2,
     },
     abilityLabel: {
-        color: '#7f8c8d',
         fontWeight: '600',
     },
     otherAbilities: {
         fontSize: 14,
-        color: '#2c3e50',
     },
     arrowContainer: {
         padding: 8,
@@ -346,7 +392,6 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#7f8c8d',
         textAlign: 'center',
     },
     loaderContainer: {
@@ -357,7 +402,6 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 12,
         fontSize: 16,
-        color: '#7f8c8d',
     },
     errorContainer: {
         flex: 1,
@@ -371,12 +415,10 @@ const styles = StyleSheet.create({
     errorText: {
         fontSize: 16,
         fontWeight: 700,
-        color: '#e74c3c',
         textAlign: 'center',
         marginBottom: 16,
     },
     retryButton: {
-        backgroundColor: '#e74c3c',
         paddingVertical: 10,
         paddingHorizontal: 24,
         borderRadius: 24,

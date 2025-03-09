@@ -21,12 +21,14 @@ import {
     showLessAbilitiesRequest,
     showMoreAbilitiesFailure
 } from "../redux/abilityList/abilityListAction";
+import { useTheme } from "../theme/ThemeContext";
 
 // Constants
 const STORAGE_KEY = "pokemonAbilitiesData";
 const INITIAL_URL = "https://pokeapi.co/api/v2/ability/?offset=0&limit=10";
 
 const AbilityList = () => {
+    const { theme } = useTheme();
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const { abilities, next, loading, error } = useSelector((state) => state.abilityList);
@@ -84,8 +86,6 @@ const AbilityList = () => {
         }
     }, [searchQuery, abilities]);
 
-
-
     // Show More/Less Handlers
     const handleShowMore = () => {
         if (next) {
@@ -100,7 +100,7 @@ const AbilityList = () => {
     // Render Individual Ability Item
     const renderItem = ({ item }) => (
         <TouchableOpacity
-            style={styles.abilityItem}
+            style={[styles.abilityItem, { backgroundColor: theme.card }]}
             onPress={() => handleNavigateToAbilityDetail(item)}
             activeOpacity={0.7}
         >
@@ -108,16 +108,16 @@ const AbilityList = () => {
                 <Icon
                     name="sparkles"
                     size={23}
-                    color="#2980b9"
+                    color={theme.primary}
                     style={styles.icon}
                 />
-                <Text style={styles.abilityName}>
+                <Text style={[styles.abilityName, { color: theme.text }]}>
                     {item.name.replace(/-/g, " ")}
                 </Text>
                 <Icon
                     name="chevron-forward"
                     size={20}
-                    color="#697386"
+                    color={theme.textSecondary}
                 />
             </View>
         </TouchableOpacity>
@@ -128,30 +128,61 @@ const AbilityList = () => {
         loading ? (
             <ActivityIndicator
                 size="large"
-                color="#2980b9"
+                color={theme.primary}
                 style={styles.loadingIndicator}
             />
         ) : null
     );
 
+    // Create dynamic styles based on theme
+    const dynamicStyles = {
+        container: {
+            backgroundColor: theme.background,
+        },
+        header: {
+            backgroundColor: theme.headerBackground,
+        },
+        title: {
+            color: theme.headerText,
+        },
+        searchContainer: {
+            backgroundColor: theme.searchBackground,
+        },
+        searchInput: {
+            color: theme.text,
+        },
+        emptySearchText: {
+            color: theme.textMuted,
+        },
+        button: {
+            backgroundColor: theme.primary,
+        },
+        disabledButton: {
+            backgroundColor: theme.buttonDisabled,
+        },
+        errorText: {
+            color: theme.error,
+        },
+    };
+
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Pokemon Abilities</Text>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
+            <View style={[styles.header, dynamicStyles.header]}>
+                <Text style={[styles.title, dynamicStyles.title]}>Pokemon Abilities</Text>
             </View>
 
             {/* Search Input */}
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, dynamicStyles.searchContainer]}>
                 <SearchIcon
                     name="search"
                     size={20}
-                    color="#95a5a6"
+                    color={theme.textMuted}
                     style={styles.searchIcon}
                 />
                 <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, dynamicStyles.searchInput]}
                     placeholder="Search abilities..."
-                    placeholderTextColor="#95a5a6"
+                    placeholderTextColor={theme.textMuted}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     clearButtonMode="while-editing"
@@ -163,11 +194,11 @@ const AbilityList = () => {
                     <Icon
                         name="warning"
                         size={50}
-                        color="#FF4E64"
+                        color={theme.error}
                     />
-                    <Text style={styles.errorText}>{error}</Text>
+                    <Text style={[styles.errorText, dynamicStyles.errorText]}>{error}</Text>
                     <TouchableOpacity
-                        style={styles.retryButton}
+                        style={[styles.retryButton, { backgroundColor: theme.primary }]}
                         onPress={() => dispatch(showMoreAbilitiesRequest(INITIAL_URL))}
                     >
                         <Text style={styles.retryButtonText}>Retry</Text>
@@ -187,9 +218,9 @@ const AbilityList = () => {
                                 <Icon
                                     name="search-off"
                                     size={50}
-                                    color="#95a5a6"
+                                    color={theme.textMuted}
                                 />
-                                <Text style={styles.emptySearchText}>
+                                <Text style={[styles.emptySearchText, dynamicStyles.emptySearchText]}>
                                     No abilities found matching "{searchQuery}"
                                 </Text>
                             </View>
@@ -198,11 +229,15 @@ const AbilityList = () => {
                 />
             )}
 
-            <View style={styles.buttonContainer}>
+            <View style={[styles.buttonContainer, {
+                backgroundColor: theme.card,
+                borderTopColor: theme.border
+            }]}>
                 <TouchableOpacity
                     style={[
                         styles.button,
-                        ((abilities.length <= 10 || loading || isSearching) && styles.disabledButton)
+                        dynamicStyles.button,
+                        ((abilities.length <= 10 || loading || isSearching) && dynamicStyles.disabledButton)
                     ]}
                     onPress={handleShowLess}
                     disabled={abilities.length <= 10 || loading || isSearching}
@@ -214,7 +249,8 @@ const AbilityList = () => {
                 <TouchableOpacity
                     style={[
                         styles.button,
-                        ((!next || loading || isSearching) && styles.disabledButton)
+                        dynamicStyles.button,
+                        ((!next || loading || isSearching) && dynamicStyles.disabledButton)
                     ]}
                     onPress={handleShowMore}
                     disabled={!next || loading || isSearching}
@@ -227,14 +263,11 @@ const AbilityList = () => {
     );
 };
 
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#ebeaea",
     },
     header: {
-        backgroundColor: "#2980b9",
         paddingVertical: 20,
         paddingHorizontal: 16,
         alignItems: "center",
@@ -244,13 +277,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: "700",
-        color: "#FFFFFF",
         letterSpacing: 0.5,
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
         borderRadius: 10,
         paddingHorizontal: 15,
         marginHorizontal: 16,
@@ -263,7 +294,6 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 50,
         fontSize: 16,
-        color: '#2c3e50',
     },
     emptySearchContainer: {
         flex: 1,
@@ -273,7 +303,6 @@ const styles = StyleSheet.create({
     },
     emptySearchText: {
         marginTop: 15,
-        color: '#95a5a6',
         fontSize: 16,
         textAlign: 'center',
     },
@@ -283,7 +312,6 @@ const styles = StyleSheet.create({
         paddingBottom: 80,
     },
     abilityItem: {
-        backgroundColor: "#FFFFFF",
         borderRadius: 12,
         marginBottom: 12,
     },
@@ -301,28 +329,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "500",
         textTransform: "capitalize",
-        color: "#1E2132",
     },
     buttonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
         paddingHorizontal: 16,
         paddingVertical: 16,
-        backgroundColor: "#FFFFFF",
         borderTopWidth: 1,
-        borderTopColor: "#E0E4EB",
     },
     button: {
-        backgroundColor: "#2980b9",
         paddingVertical: 14,
         paddingHorizontal: 24,
         borderRadius: 10,
         alignItems: "center",
         flex: 0.48,
-        shadowColor: "#2980b9",
-    },
-    disabledButton: {
-        backgroundColor: "#E0E4EB",
     },
     buttonText: {
         color: "#FFFFFF",
@@ -336,13 +356,11 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     errorText: {
-        color: "#FF4E64",
         fontSize: 16,
         textAlign: "center",
         marginVertical: 16,
     },
     retryButton: {
-        backgroundColor: "#2980b9",
         paddingVertical: 12,
         paddingHorizontal: 24,
         borderRadius: 8,

@@ -30,6 +30,9 @@ function* syncProfileSaga() {
 
         const { name, picture, theme } = response.data;
 
+
+
+
         // Add timestamp to picture URL to prevent caching
         const picWithTimestamp = picture.includes('?') ?
             `${picture}&_t=${timestamp}` :

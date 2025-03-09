@@ -1,10 +1,11 @@
 import React from "react";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar, StyleSheet } from "react-native";
 
 import HomeIcon from "react-native-vector-icons/AntDesign";
 import AbilityListIcon from "react-native-vector-icons/FontAwesome5";
@@ -14,6 +15,7 @@ import AbilityList from "./src/screen/AbilityList";
 import AbilityDetail from "./src/screen/AbilityDetail";
 import PokemonDetail from "./src/screen/PokemonDetail";
 import Home from "./src/screen/Home";
+import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -29,18 +31,42 @@ const AbilityDetailStack = () => {
   );
 };
 
-const App = () => {
+const AppContent = () => {
+  const { theme, isDark } = useTheme();
+
+  // Create custom navigation theme based on our theme
+  const navigationTheme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDark ? DarkTheme.colors : DefaultTheme.colors),
+      primary: theme.primary,
+      background: theme.background,
+      card: theme.card,
+      text: theme.text,
+      border: theme.border,
+    },
+  };
+
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1 }}>
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={theme.headerBackground}
+      />
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
         <Provider store={store}>
-          <NavigationContainer>
+          <NavigationContainer theme={navigationTheme}>
             <Tab.Navigator
               initialRouteName="ABILITY_LIST"
               screenOptions={{
                 headerShown: false,
                 tabBarShowLabel: false,
-                tabBarActiveTintColor: "#2980b9",
+                tabBarActiveTintColor: theme.primary,
+                tabBarInactiveTintColor: theme.textMuted,
+                tabBarStyle: {
+                  backgroundColor: theme.card,
+                  borderTopColor: theme.border,
+                },
               }}
             >
               <Tab.Screen
@@ -78,8 +104,12 @@ const App = () => {
   );
 };
 
+const App = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+};
+
 export default App;
-
-
-
-
