@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import {
     View,
@@ -12,6 +11,11 @@ import {
     KeyboardAvoidingView,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    syncProfileRequest,
+    updateProfileRequest
+} from '../redux/user/userAction';
 
 const ThemeButton = ({ label, active, onPress }) => (
     <TouchableOpacity
@@ -25,38 +29,39 @@ const ThemeButton = ({ label, active, onPress }) => (
 );
 
 const Home = () => {
-    const [picProfile, setPicProfile] = useState(null);
+    // Local state for form handling
     const [username, setUsername] = useState('');
     const [theme, setTheme] = useState('light');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    console.log('picProfile', picProfile)
+    const [localPicProfile, setLocalPicProfile] = useState(null);
 
+    // Get data from Redux store
+    const dispatch = useDispatch();
+    const {
+        username: storeUsername,
+        picProfile: storePicProfile,
+        theme: storeTheme,
+        loading,
+        error
+    } = useSelector(state => state.user);
+
+    // Fetch profile data on component mount
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('http://192.99.8.135/pokemon_api.php?route=get_info&user_id=17');
-                const { name, picture, theme } = response.data;
+        dispatch(syncProfileRequest());
 
-                setUsername(name);
-                setPicProfile(picture);
-                setTheme(theme);
+        // Setup interval to regularly fetch profile data
+        const intervalId = setInterval(() => {
+            dispatch(syncProfileRequest());
+        }, 50000);
 
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-
-        // Fetch data initially
-        fetchData();
-
-        // Set interval to fetch data every 50 second
-        const intervalId = setInterval(fetchData, 50000);
-
-        // Cleanup function to clear interval when component unmounts
         return () => clearInterval(intervalId);
-    }, []);
+    }, [dispatch]);
 
-
+    // Update local state when Redux store changes
+    useEffect(() => {
+        if (storeUsername) setUsername(storeUsername);
+        if (storePicProfile) setLocalPicProfile(storePicProfile);
+        if (storeTheme) setTheme(storeTheme);
+    }, [storeUsername, storePicProfile, storeTheme]);
 
     const imagePickerOptions = {
         mediaType: 'photo',
@@ -82,7 +87,7 @@ const Home = () => {
                     Alert.alert('Image Too Large', 'Please select an image smaller than 5MB');
                     return;
                 }
-                setPicProfile(image.uri);
+                setLocalPicProfile(image.uri);
             }
         });
     };
@@ -91,41 +96,52 @@ const Home = () => {
         const errors = [];
         if (!username.trim()) errors.push('Username is required');
         if (username.length < 3) errors.push('Username must be at least 3 characters');
-        if (!picProfile) errors.push('Profile picture is required');
+        if (!localPicProfile) errors.push('Profile picture is required');
         return errors;
     };
 
-    const handleSubmit = async () => {
-        if (isSubmitting) return;
+    const handleSubmit = () => {
         const validationErrors = validateForm();
         if (validationErrors.length > 0) {
             Alert.alert('Validation Errors', validationErrors.join('\n'));
             return;
         }
-        setIsSubmitting(true);
 
-        try {
-            const formData = new FormData();
-            formData.append('name', username.trim());
-            formData.append('theme', theme);
-            formData.append('picture', {
-                uri: picProfile,
-                type: 'image/jpeg',
-                name: 'profile.jpg',
-            });
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('name', username.trim());
+        formData.append('theme', theme);
+        formData.append('picture', {
+            uri: localPicProfile,
+            type: 'image/jpeg',
+            name: 'profile.jpg',
+        });
 
-            await axios.post('http://192.99.8.135/pokemon_api.php?route=set_info&user_id=17', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+        // Dispatch action to update profile
+        dispatch(updateProfileRequest({
+            formData,
+            onSuccess: () => {
+                Alert.alert('Success', 'Profile updated successfully!');
+                // Fetch the latest data right after update
+                dispatch(syncProfileRequest());
+            },
+            onFailure: (error) => {
+                Alert.alert('Submission Error', error || 'Failed to submit form. Please try again.');
+            }
+        }));
+    };
 
-            Alert.alert('Success', 'Profile updated successfully!', [{
-                text: 'OK', onPress: () => setIsSubmitting(false),
-            }]);
-        } catch (error) {
-            console.error('Error submitting form:', error);
-            Alert.alert('Submission Error', 'Failed to submit form. Please try again.');
-            setIsSubmitting(false);
+    // Display current image with timestamp to prevent caching
+    const getImageSource = () => {
+        if (!localPicProfile) return null;
+
+        // If it's a local file (from image picker)
+        if (localPicProfile.startsWith('file://') || localPicProfile.startsWith('content://')) {
+            return { uri: localPicProfile };
         }
+
+        // It's a remote URL, so it already has timestamp
+        return { uri: localPicProfile };
     };
 
     return (
@@ -134,8 +150,12 @@ const Home = () => {
                 <Text style={styles.title}>Profile Settings</Text>
 
                 <TouchableOpacity onPress={handleImagePicker} style={styles.imagePickerContainer}>
-                    {picProfile ? (
-                        <Image source={{ uri: picProfile }} style={styles.profileImage} />
+                    {localPicProfile ? (
+                        <Image
+                            source={getImageSource()}
+                            style={styles.profileImage}
+                            key={Date.now()} // Force refresh image
+                        />
                     ) : (
                         <View style={styles.imagePlaceholder}>
                             <Text style={styles.imagePickerText}>Select Profile Picture</Text>
@@ -164,12 +184,16 @@ const Home = () => {
                 </View>
 
                 <TouchableOpacity
-                    style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                    style={[styles.submitButton, loading && styles.submitButtonDisabled]}
                     onPress={handleSubmit}
-                    disabled={isSubmitting}
+                    disabled={loading}
                 >
-                    <Text style={styles.submitButtonText}>{isSubmitting ? 'Updating...' : 'Submit'}</Text>
+                    <Text style={styles.submitButtonText}>{loading ? 'Updating...' : 'Submit'}</Text>
                 </TouchableOpacity>
+
+                {error && (
+                    <Text style={styles.errorText}>{error}</Text>
+                )}
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -279,6 +303,11 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
+    errorText: {
+        color: 'red',
+        textAlign: 'center',
+        marginTop: 10,
+    }
 });
 
 export default Home;

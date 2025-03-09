@@ -7,10 +7,10 @@ import abilityDetailReducer from './abilityDetail/abilityDetailReducer';
 import pokemonDetailReducer from './pokemonDetail/pokemonDetailReducer';
 import userReducer from './user/userReducer';
 
-
 import { watchAbilityListSaga } from './abilityList/abilityListSaga';
 import { watchAbilityDetailSaga } from './abilityDetail/abilityDetailSaga';
 import { watchPokemonDetailSaga } from './pokemonDetail/pokemonDetailSaga';
+import { watchUserProfileSaga } from './user/userSaga';
 
 const rootReducer = combineReducers({
     abilityList: abilityListReducer,
@@ -24,6 +24,7 @@ function* rootSaga() {
         watchAbilityListSaga(),
         watchAbilityDetailSaga(),
         watchPokemonDetailSaga(),
+        watchUserProfileSaga(),
     ]);
 }
 

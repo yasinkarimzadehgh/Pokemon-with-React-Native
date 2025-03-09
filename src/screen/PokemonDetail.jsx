@@ -19,11 +19,12 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 function PokemonDetail() {
     const route = useRoute();
     const { pokemonName } = route.params;
+
+    const dispatch = useDispatch();
     const { pokemonDetail, loading, error } = useSelector(state => state.pokemonDetail);
     const { pokemonList } = useSelector(state => state.abilityDetail);
 
     const navigation = useNavigation();
-    const dispatch = useDispatch();
 
     useEffect(() => {
         if (pokemonName) {
