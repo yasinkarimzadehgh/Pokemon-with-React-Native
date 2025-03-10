@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+"use client"
+
+import { useEffect, useState } from "react"
 import {
     View,
     Text,
@@ -9,17 +11,17 @@ import {
     Alert,
     ScrollView,
     KeyboardAvoidingView,
-} from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-    syncProfileRequest,
-    updateProfileRequest
-} from '../redux/user/userAction';
-import { useTheme } from '../theme/ThemeContext';
+} from "react-native"
+import { launchImageLibrary } from "react-native-image-picker"
+import { useDispatch, useSelector } from "react-redux"
+import { syncProfileRequest, updateProfileRequest } from "../redux/user/userAction"
+import { logout } from "../redux/auth/authAction"
+import { useTheme } from "../theme/ThemeContext"
+import Icon from "react-native-vector-icons/MaterialIcons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 const ThemeButton = ({ label, active, onPress }) => {
-    const { theme } = useTheme();
+    const { theme } = useTheme()
 
     return (
         <TouchableOpacity
@@ -27,139 +29,152 @@ const ThemeButton = ({ label, active, onPress }) => {
                 styles.themeButton,
                 {
                     backgroundColor: active ? theme.primary : theme.card,
-                    borderColor: active ? theme.primary : theme.border
-                }
+                    borderColor: active ? theme.primary : theme.border,
+                },
             ]}
             onPress={onPress}
         >
-            <Text
-                style={[
-                    styles.themeButtonText,
-                    { color: active ? theme.headerText : theme.text }
-                ]}
-            >
-                {label}
-            </Text>
+            <Text style={[styles.themeButtonText, { color: active ? theme.headerText : theme.text }]}>{label}</Text>
         </TouchableOpacity>
-    );
-};
+    )
+}
 
 const Home = () => {
-    const { theme, setThemeMode } = useTheme();
 
-    const [username, setUsername] = useState('');
-    const [themeMode, setLocalThemeMode] = useState('light');
-    const [localPicProfile, setLocalPicProfile] = useState(null);
+    const { theme, setThemeMode } = useTheme()
 
-    const dispatch = useDispatch();
+    const [username, setUsername] = useState("")
+    const [themeMode, setLocalThemeMode] = useState("light")
+    const [localPicProfile, setLocalPicProfile] = useState(null)
+
+    const dispatch = useDispatch()
     const {
         username: storeUsername,
         picProfile: storePicProfile,
         theme: storeTheme,
         loading,
-        error
-    } = useSelector(state => state.userProfile);
+        error,
+    } = useSelector((state) => state.userProfile)
+
+
 
     useEffect(() => {
-        dispatch(syncProfileRequest());
+        dispatch(syncProfileRequest())
 
         // Setup interval to regularly fetch profile data
         const intervalId = setInterval(() => {
-            dispatch(syncProfileRequest());
-        }, 50000);
+            dispatch(syncProfileRequest())
+        }, 50000)
 
-        return () => clearInterval(intervalId);
-    }, [dispatch]);
+        return () => clearInterval(intervalId)
+    }, [dispatch])
 
     // Update local state when Redux store changes
     useEffect(() => {
-        if (storeUsername) setUsername(storeUsername);
-        if (storePicProfile) setLocalPicProfile(storePicProfile);
-        if (storeTheme) setLocalThemeMode(storeTheme);
-    }, [storeUsername, storePicProfile, storeTheme]);
+        if (storeUsername) setUsername(storeUsername)
+        if (storePicProfile) setLocalPicProfile(storePicProfile)
+        if (storeTheme) setLocalThemeMode(storeTheme)
+    }, [storeUsername, storePicProfile, storeTheme])
 
     const imagePickerOptions = {
-        mediaType: 'photo',
+        mediaType: "photo",
         includeBase64: false,
         maxHeight: 2000,
         maxWidth: 2000,
         quality: 0.8,
-    };
+    }
 
     const handleImagePicker = () => {
         launchImageLibrary(imagePickerOptions, (response) => {
-            if (response.didCancel) return;
+            if (response.didCancel) return
 
             if (response.errorCode) {
-                Alert.alert('Image Selection Error', response.errorMessage || 'Failed to select image');
-                return;
+                Alert.alert("Image Selection Error", response.errorMessage || "Failed to select image")
+                return
             }
 
-            const image = response.assets?.[0];
+            const image = response.assets?.[0]
             if (image) {
-                const maxSizeInBytes = 5 * 1024 * 1024;
+                const maxSizeInBytes = 5 * 1024 * 1024
                 if (image.fileSize > maxSizeInBytes) {
-                    Alert.alert('Image Too Large', 'Please select an image smaller than 5MB');
-                    return;
+                    Alert.alert("Image Too Large", "Please select an image smaller than 5MB")
+                    return
                 }
-                setLocalPicProfile(image.uri);
+                setLocalPicProfile(image.uri)
             }
-        });
-    };
+        })
+    }
 
     const validateForm = () => {
-        const errors = [];
-        if (!username.trim()) errors.push('Username is required');
-        if (username.length < 3) errors.push('Username must be at least 3 characters');
-        if (!localPicProfile) errors.push('Profile picture is required');
-        return errors;
-    };
+        const errors = []
+        if (!username.trim()) errors.push("Username is required")
+        if (username.length < 3) errors.push("Username must be at least 3 characters")
+        if (!localPicProfile) errors.push("Profile picture is required")
+        return errors
+    }
 
     const handleSubmit = () => {
-        const validationErrors = validateForm();
+        const validationErrors = validateForm()
         if (validationErrors.length > 0) {
-            Alert.alert('Validation Errors', validationErrors.join('\n'));
-            return;
+            Alert.alert("Validation Errors", validationErrors.join("\n"))
+            return
         }
 
         // Prepare form data
-        const formData = new FormData();
-        formData.append('name', username.trim());
-        formData.append('theme', themeMode);
-        formData.append('picture', {
+        const formData = new FormData()
+        formData.append("name", username.trim())
+        formData.append("theme", themeMode)
+        formData.append("picture", {
             uri: localPicProfile,
-            type: 'image/jpeg',
-            name: 'profile.jpg',
-        });
+            type: "image/jpeg",
+            name: "profile.jpg",
+        })
 
         // Dispatch action to update profile
-        dispatch(updateProfileRequest({
-            formData,
-            onSuccess: () => {
-                Alert.alert('Success', 'Profile updated successfully!');
-                // Fetch the latest data right after update
-                dispatch(syncProfileRequest());
-                setThemeMode(themeMode);
+        dispatch(
+            updateProfileRequest({
+                formData,
+                onSuccess: () => {
+                    Alert.alert("Success", "Profile updated successfully!")
+                    // Fetch the latest data right after update
+                    dispatch(syncProfileRequest())
+                    setThemeMode(themeMode)
+                },
+                onFailure: (error) => {
+                    Alert.alert("Submission Error", error || "Failed to submit form. Please try again.")
+                },
+            }),
+        )
+    }
 
+    const handleLogout = () => {
+        Alert.alert("Logout", "Are you sure you want to logout?", [
+            {
+                text: "Cancel",
+                style: "cancel",
             },
-            onFailure: (error) => {
-                Alert.alert('Submission Error', error || 'Failed to submit form. Please try again.');
-            }
-        }));
-    };
+            {
+                text: "Logout",
+                onPress: () => {
+                    AsyncStorage.removeItem("isAuthenticated")
+                    dispatch(logout())
+                },
+            },
+        ])
+    }
 
     // Display current image with timestamp to prevent caching
     const getImageSource = () => {
-        if (!localPicProfile) return null;
+        if (!localPicProfile) return null
 
         // If it's a local file (from image picker)
-        if (localPicProfile.startsWith('file://') || localPicProfile.startsWith('content://')) {
-            return { uri: localPicProfile };
+        if (localPicProfile.startsWith("file://") || localPicProfile.startsWith("content://")) {
+            return { uri: localPicProfile }
         }
 
         // It's a remote URL, so it already has timestamp
-        return { uri: localPicProfile };
-    };
+        return { uri: localPicProfile }
+    }
 
     // Create dynamic styles based on theme
     const dynamicStyles = {
@@ -195,13 +210,22 @@ const Home = () => {
         },
         errorText: {
             color: theme.error,
-        }
-    };
+        },
+        logoutButton: {
+            backgroundColor: theme.error,
+        },
+    }
 
     return (
         <KeyboardAvoidingView style={[styles.container, dynamicStyles.container]}>
             <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-                <Text style={[styles.title, dynamicStyles.title]}>Profile Settings</Text>
+                <View style={styles.header}>
+                    <Text style={[styles.title, dynamicStyles.title]}>Profile Settings</Text>
+                    <TouchableOpacity style={[styles.logoutButton, dynamicStyles.logoutButton]} onPress={handleLogout}>
+                        <Icon name="logout" size={20} color="#FFFFFF" />
+                        <Text style={styles.logoutText}>Logout</Text>
+                    </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity onPress={handleImagePicker} style={styles.imagePickerContainer}>
                     {localPicProfile ? (
@@ -232,38 +256,24 @@ const Home = () => {
                 <View style={styles.themeContainer}>
                     <Text style={[styles.themeLabel, dynamicStyles.themeLabel]}>Choose Theme</Text>
                     <View style={styles.themeButtonContainer}>
-                        <ThemeButton
-                            label="Light"
-                            active={themeMode === 'light'}
-                            onPress={() => setLocalThemeMode('light')}
-                        />
-                        <ThemeButton
-                            label="Dark"
-                            active={themeMode === 'dark'}
-                            onPress={() => setLocalThemeMode('dark')}
-                        />
+                        <ThemeButton label="Light" active={themeMode === "light"} onPress={() => setLocalThemeMode("light")} />
+                        <ThemeButton label="Dark" active={themeMode === "dark"} onPress={() => setLocalThemeMode("dark")} />
                     </View>
                 </View>
 
                 <TouchableOpacity
-                    style={[
-                        styles.submitButton,
-                        dynamicStyles.submitButton,
-                        loading && dynamicStyles.submitButtonDisabled
-                    ]}
+                    style={[styles.submitButton, dynamicStyles.submitButton, loading && dynamicStyles.submitButtonDisabled]}
                     onPress={handleSubmit}
                     disabled={loading}
                 >
-                    <Text style={styles.submitButtonText}>{loading ? 'Updating...' : 'Submit'}</Text>
+                    <Text style={styles.submitButtonText}>{loading ? "Updating..." : "Submit"}</Text>
                 </TouchableOpacity>
 
-                {error && (
-                    <Text style={[styles.errorText, dynamicStyles.errorText]}>{error}</Text>
-                )}
+                {error && <Text style={[styles.errorText, dynamicStyles.errorText]}>{error}</Text>}
             </ScrollView>
         </KeyboardAvoidingView>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -272,26 +282,41 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         padding: 20,
-        justifyContent: 'center',
+    },
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 30,
     },
     title: {
         fontSize: 26,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 30,
+        fontWeight: "bold",
+    },
+    logoutButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+    },
+    logoutText: {
+        color: "#FFFFFF",
+        marginLeft: 5,
+        fontWeight: "600",
     },
     imagePickerContainer: {
-        alignSelf: 'center',
+        alignSelf: "center",
         marginBottom: 30,
     },
     imagePlaceholder: {
         width: 180,
         height: 180,
         borderRadius: 90,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
         borderWidth: 2,
-        borderStyle: 'dashed',
+        borderStyle: "dashed",
     },
     profileImage: {
         width: 180,
@@ -300,7 +325,7 @@ const styles = StyleSheet.create({
         borderWidth: 3,
     },
     imagePickerText: {
-        textAlign: 'center',
+        textAlign: "center",
         fontSize: 16,
     },
     input: {
@@ -317,11 +342,11 @@ const styles = StyleSheet.create({
     themeLabel: {
         fontSize: 18,
         marginBottom: 10,
-        fontWeight: '500',
+        fontWeight: "500",
     },
     themeButtonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        flexDirection: "row",
+        justifyContent: "space-between",
     },
     themeButton: {
         flex: 1,
@@ -331,26 +356,27 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     themeButtonText: {
-        textAlign: 'center',
+        textAlign: "center",
         fontSize: 16,
-        fontWeight: '500',
+        fontWeight: "500",
     },
     submitButton: {
         height: 50,
         borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
         marginTop: 10,
     },
     submitButtonText: {
-        color: 'white',
+        color: "white",
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     errorText: {
-        textAlign: 'center',
+        textAlign: "center",
         marginTop: 10,
-    }
-});
+    },
+})
 
-export default Home;
+export default Home
+
