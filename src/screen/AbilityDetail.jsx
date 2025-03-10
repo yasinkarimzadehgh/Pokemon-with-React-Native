@@ -14,6 +14,7 @@ import { getPokemonListRequest } from "../redux/abilityDetail/abilityDetailActio
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from "../theme/ThemeContext";
+import { fonts } from "../utils/fonts";
 
 function AbilityDetail() {
     const { theme } = useTheme();
@@ -264,6 +265,7 @@ function AbilityDetail() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+
     },
     header: {
         paddingTop: 20,
@@ -275,11 +277,12 @@ const styles = StyleSheet.create({
     headerContent: {
         flex: 1,
         justifyContent: 'space-between',
+
     },
     abilityName: {
         fontSize: 20,
         fontWeight: "bold",
-        textAlign: 'center'
+        textAlign: 'center',
     },
     navigationContainer: {
         flexDirection: 'row',

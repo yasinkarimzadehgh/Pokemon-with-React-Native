@@ -15,7 +15,7 @@ export const lightTheme = {
     warning: '#f39c12',
     infoCard: '#ebf7fd',
     info: '#3498db',
-    buttonDisabled: '#E0E4EB',
+    buttonDisabled: '#86badd',
     searchBackground: '#FFFFFF',
     headerBackground: '#2980b9',
     headerText: '#FFFFFF',
@@ -78,7 +78,6 @@ export const ThemeProvider = ({ children }) => {
                 setIsLoaded(true);
             }
         };
-
         loadTheme();
     }, []);
 

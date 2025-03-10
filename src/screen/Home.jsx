@@ -45,15 +45,12 @@ const ThemeButton = ({ label, active, onPress }) => {
 };
 
 const Home = () => {
-    // Get theme from context
     const { theme, setThemeMode } = useTheme();
 
-    // Local state for form handling
     const [username, setUsername] = useState('');
     const [themeMode, setLocalThemeMode] = useState('light');
     const [localPicProfile, setLocalPicProfile] = useState(null);
 
-    // Get data from Redux store
     const dispatch = useDispatch();
     const {
         username: storeUsername,
@@ -63,7 +60,6 @@ const Home = () => {
         error
     } = useSelector(state => state.userProfile);
 
-    // Fetch profile data on component mount
     useEffect(() => {
         dispatch(syncProfileRequest());
 
@@ -126,9 +122,6 @@ const Home = () => {
             return;
         }
 
-        // Apply theme change immediately
-        setThemeMode(themeMode);
-
         // Prepare form data
         const formData = new FormData();
         formData.append('name', username.trim());
@@ -146,6 +139,8 @@ const Home = () => {
                 Alert.alert('Success', 'Profile updated successfully!');
                 // Fetch the latest data right after update
                 dispatch(syncProfileRequest());
+                setThemeMode(themeMode);
+
             },
             onFailure: (error) => {
                 Alert.alert('Submission Error', error || 'Failed to submit form. Please try again.');

@@ -49,7 +49,11 @@
 	<false/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Nunito.ttf</string>
+		<string>Nunito-Bold.ttf</string>
+		<string>Nunito-Light.ttf</string>
+		<string>Nunito-Medium.ttf</string>
+		<string>Nunito-Regular.ttf</string>
+		<string>Nunito-SemiBold.ttf</string>
 	</array>
 </dict>
 </plist>
