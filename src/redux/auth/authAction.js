@@ -1,6 +1,8 @@
 export const LOGIN_REQUEST = 'LOGIN_REQUEST';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAILURE = 'LOGIN_FAILURE';
+export const SET_AUTH_FROM_STORAGE = 'SET_AUTH_FROM_STORAGE';
+
 export const LOGOUT = 'LOGOUT';
 
 export const loginRequest = (userId) => ({
@@ -20,4 +22,9 @@ export const loginFailure = (error) => ({
 
 export const logout = () => ({
     type: LOGOUT,
+});
+
+export const setAuthFromStorage = (userId) => ({
+    type: SET_AUTH_FROM_STORAGE,
+    payload: userId,
 });
