@@ -6,7 +6,6 @@ export const UPDATE_PROFILE_REQUEST = 'UPDATE_PROFILE_REQUEST';
 export const UPDATE_PROFILE_SUCCESS = 'UPDATE_PROFILE_SUCCESS';
 export const UPDATE_PROFILE_FAILURE = 'UPDATE_PROFILE_FAILURE';
 
-// Sync profile actions
 export const syncProfileRequest = () => ({
     type: SYNC_PROFILE_REQUEST
 });
@@ -21,7 +20,6 @@ export const syncProfileFailure = (error) => ({
     payload: error
 });
 
-// Update profile actions
 export const updateProfileRequest = (data) => ({
     type: UPDATE_PROFILE_REQUEST,
     payload: data

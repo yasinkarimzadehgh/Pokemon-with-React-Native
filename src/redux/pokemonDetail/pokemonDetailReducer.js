@@ -1,4 +1,3 @@
-// reducer.js
 import {
     GET_POKEMON_DETAIL_REQUEST,
     GET_POKEMON_DETAIL_SUCCESS,

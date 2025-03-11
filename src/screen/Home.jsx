@@ -16,12 +16,12 @@ import { launchImageLibrary } from "react-native-image-picker"
 import { useDispatch, useSelector } from "react-redux"
 import { syncProfileRequest, updateProfileRequest } from "../redux/user/userAction"
 import { logout } from "../redux/auth/authAction"
-import { useTheme } from "../theme/ThemeContext"
 import Icon from "react-native-vector-icons/MaterialIcons"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { setDarkMode, setLightMode } from "../redux/theme/themeAction"
 
 const ThemeButton = ({ label, active, onPress }) => {
-    const { theme } = useTheme()
+    const { theme } = useSelector(state => state.theme);
 
     return (
         <TouchableOpacity
@@ -41,7 +41,7 @@ const ThemeButton = ({ label, active, onPress }) => {
 
 const Home = () => {
 
-    const { theme, setThemeMode } = useTheme()
+    const { theme } = useSelector(state => state.theme);
 
     const [username, setUsername] = useState("")
     const [themeMode, setLocalThemeMode] = useState("light")
@@ -56,12 +56,9 @@ const Home = () => {
         error,
     } = useSelector((state) => state.userProfile)
 
-
-
     useEffect(() => {
         dispatch(syncProfileRequest())
 
-        // Setup interval to regularly fetch profile data
         const intervalId = setInterval(() => {
             dispatch(syncProfileRequest())
         }, 50000)
@@ -69,7 +66,6 @@ const Home = () => {
         return () => clearInterval(intervalId)
     }, [dispatch])
 
-    // Update local state when Redux store changes
     useEffect(() => {
         if (storeUsername) setUsername(storeUsername)
         if (storePicProfile) setLocalPicProfile(storePicProfile)
@@ -120,7 +116,6 @@ const Home = () => {
             return
         }
 
-        // Prepare form data
         const formData = new FormData()
         formData.append("name", username.trim())
         formData.append("theme", themeMode)
@@ -130,7 +125,6 @@ const Home = () => {
             name: "profile.jpg",
         })
 
-        // Dispatch action to update profile
         dispatch(
             updateProfileRequest({
                 formData,
@@ -138,7 +132,8 @@ const Home = () => {
                     Alert.alert("Success", "Profile updated successfully!")
                     // Fetch the latest data right after update
                     dispatch(syncProfileRequest())
-                    setThemeMode(themeMode)
+                    if (themeMode == 'dark') dispatch(setDarkMode());
+                    if (themeMode == 'light') dispatch(setLightMode());
                 },
                 onFailure: (error) => {
                     Alert.alert("Submission Error", error || "Failed to submit form. Please try again.")
@@ -163,20 +158,16 @@ const Home = () => {
         ])
     }
 
-    // Display current image with timestamp to prevent caching
     const getImageSource = () => {
         if (!localPicProfile) return null
 
-        // If it's a local file (from image picker)
         if (localPicProfile.startsWith("file://") || localPicProfile.startsWith("content://")) {
             return { uri: localPicProfile }
         }
 
-        // It's a remote URL, so it already has timestamp
         return { uri: localPicProfile }
     }
 
-    // Create dynamic styles based on theme
     const dynamicStyles = {
         container: {
             backgroundColor: theme.background,

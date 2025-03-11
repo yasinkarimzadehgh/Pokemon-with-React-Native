@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
     View,
     Text,
@@ -13,15 +13,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPokemonListRequest } from "../redux/abilityDetail/abilityDetailAction";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useTheme } from "../theme/ThemeContext";
-import { fonts } from "../utils/fonts";
 
 function AbilityDetail() {
-    const { theme } = useTheme();
     const route = useRoute();
     const { abilityName } = route.params || { abilityName: "stench" };
 
+
     const dispatch = useDispatch();
+    const { theme } = useSelector(state => state.theme);
     const { abilities } = useSelector(state => state.abilityList);
     const { pokemonList, loading, error } = useSelector(state => state.abilityDetail);
 
@@ -54,7 +53,6 @@ function AbilityDetail() {
         return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     };
 
-    // Create dynamic styles based on theme
     const dynamicStyles = {
         container: {
             backgroundColor: theme.background,
@@ -218,7 +216,6 @@ function AbilityDetail() {
                 </View>
             </View>
 
-            {/* Main Content */}
             {loading ? (
                 <View style={styles.loaderContainer}>
                     <ActivityIndicator size="large" color={theme.primary} />

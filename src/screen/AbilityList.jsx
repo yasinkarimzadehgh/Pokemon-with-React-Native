@@ -21,23 +21,20 @@ import {
     showLessAbilitiesRequest,
     showMoreAbilitiesFailure
 } from "../redux/abilityList/abilityListAction";
-import { useTheme } from "../theme/ThemeContext";
 
-// Constants
 const STORAGE_KEY = "pokemonAbilitiesData";
 const INITIAL_URL = "https://pokeapi.co/api/v2/ability/?offset=0&limit=10";
 
 const AbilityList = () => {
-    const { theme } = useTheme();
+    const { theme } = useSelector(state => state.theme);
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const { abilities, next, loading, error } = useSelector((state) => state.abilityList);
-    // Search State
+
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredAbilities, setFilteredAbilities] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
 
-    // Navigation to Ability Detail
     const handleNavigateToAbilityDetail = (item) => {
         navigation.navigate('ABILITY_DETAIL_STACK', {
             screen: 'ABILITY_DETAIL',
@@ -45,7 +42,6 @@ const AbilityList = () => {
         });
     };
 
-    // Error Handling
     const handleError = (error, message) => {
         console.error(error);
         dispatch(showMoreAbilitiesFailure(message));
@@ -55,7 +51,6 @@ const AbilityList = () => {
         }]);
     };
 
-    // Initial Data Fetch
     useEffect(() => {
         const checkStoredAbilities = async () => {
             try {
@@ -72,7 +67,6 @@ const AbilityList = () => {
         checkStoredAbilities();
     }, []);
 
-    // Search and Filter Abilities
     useEffect(() => {
         if (searchQuery) {
             const filtered = abilities.filter(ability =>
@@ -86,7 +80,6 @@ const AbilityList = () => {
         }
     }, [searchQuery, abilities]);
 
-    // Show More/Less Handlers
     const handleShowMore = () => {
         if (next) {
             dispatch(showMoreAbilitiesRequest(next));
@@ -97,7 +90,6 @@ const AbilityList = () => {
         dispatch(showLessAbilitiesRequest());
     };
 
-    // Render Individual Ability Item
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.abilityItem, { backgroundColor: theme.card }]}
@@ -123,7 +115,6 @@ const AbilityList = () => {
         </TouchableOpacity>
     );
 
-    // Loading Indicator
     const renderFooter = () => (
         loading ? (
             <ActivityIndicator
@@ -134,7 +125,6 @@ const AbilityList = () => {
         ) : null
     );
 
-    // Create dynamic styles based on theme
     const dynamicStyles = {
         container: {
             backgroundColor: theme.background,
@@ -171,7 +161,6 @@ const AbilityList = () => {
                 <Text style={[styles.title, dynamicStyles.title]}>Pokemon Abilities</Text>
             </View>
 
-            {/* Search Input */}
             <View style={[styles.searchContainer, dynamicStyles.searchContainer]}>
                 <SearchIcon
                     name="search"

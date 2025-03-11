@@ -10,12 +10,13 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginRequest } from '../redux/auth/authAction';
-import { useTheme } from '../theme/ThemeContext';
 
 const Login = () => {
-    const { theme } = useTheme();
+
     const [userId, setUserId] = useState('');
+
     const dispatch = useDispatch();
+    const { theme } = useSelector(state => state.theme);
     const { loading, error } = useSelector(state => state.auth);
 
     useEffect(() => {

@@ -13,6 +13,7 @@ import { watchAbilityDetailSaga } from "./abilityDetail/abilityDetailSaga"
 import { watchPokemonDetailSaga } from "./pokemonDetail/pokemonDetailSaga"
 import { watchUserProfileSaga } from "./user/userSaga"
 import { watchAuthSaga } from "./auth/authSaga"
+import themeReducer from "./theme/themeReducer"
 
 const rootReducer = combineReducers({
     abilityList: abilityListReducer,
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
     pokemonDetail: pokemonDetailReducer,
     userProfile: userReducer,
     auth: authReducer,
+    theme: themeReducer,
 })
 
 function* rootSaga() {

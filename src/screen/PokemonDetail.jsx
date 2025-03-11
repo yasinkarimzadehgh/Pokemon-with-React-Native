@@ -14,16 +14,15 @@ import { getPokemonDetailRequest } from '../redux/pokemonDetail/pokemonDetailAct
 import { useRoute } from '@react-navigation/native';
 import { useNavigation } from "@react-navigation/native";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useTheme } from '../theme/ThemeContext';
 
 function PokemonDetail() {
-    const { theme } = useTheme();
     const route = useRoute();
     const { pokemonName } = route.params;
 
     const dispatch = useDispatch();
-    const { pokemonDetail, loading, error } = useSelector(state => state.pokemonDetail);
+    const { theme } = useSelector(state => state.theme);
     const { pokemonList } = useSelector(state => state.abilityDetail);
+    const { pokemonDetail, loading, error } = useSelector(state => state.pokemonDetail);
 
     const navigation = useNavigation();
 
@@ -65,7 +64,6 @@ function PokemonDetail() {
         return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     };
 
-    // Create dynamic styles based on theme
     const dynamicStyles = {
         mainContainer: {
             backgroundColor: theme.background,
@@ -243,7 +241,6 @@ function PokemonDetail() {
                     )}
                 </View>
 
-                {/* Physical attributes */}
                 <View style={styles.attributesContainer}>
                     <View style={styles.attributeItem}>
                         <Text style={[styles.attributeValue, dynamicStyles.attributeValue]}>{pokemonDetail.weight / 10} kg</Text>
@@ -256,7 +253,6 @@ function PokemonDetail() {
                     </View>
                 </View>
 
-                {/* Stats */}
                 <View style={[styles.card, dynamicStyles.card]}>
                     <Text style={[styles.subtitle, dynamicStyles.subtitle]}>Base Stats</Text>
                     {pokemonDetail.stats.map((stat, index) => (
@@ -267,7 +263,6 @@ function PokemonDetail() {
                     ))}
                 </View>
 
-                {/* Abilities */}
                 <View style={[styles.card, dynamicStyles.card]}>
                     <Text style={[styles.subtitle, dynamicStyles.subtitle]}>Abilities</Text>
                     {pokemonDetail.abilities && pokemonDetail.abilities.map((ability, index) => (

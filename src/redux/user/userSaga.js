@@ -9,13 +9,11 @@ import {
     updateProfileFailure
 } from './userAction';
 
-// Watcher Saga: Watch for actions
 export function* watchUserProfileSaga() {
     yield takeLatest(SYNC_PROFILE_REQUEST, syncProfileSaga);
     yield takeLatest(UPDATE_PROFILE_REQUEST, updateProfileSaga);
 }
 
-// Worker Saga: Fetch profile data
 function* syncProfileSaga() {
     try {
         const timestamp = Date.now();
@@ -33,7 +31,6 @@ function* syncProfileSaga() {
 
 
 
-        // Add timestamp to picture URL to prevent caching
         const picWithTimestamp = picture.includes('?') ?
             `${picture}&_t=${timestamp}` :
             `${picture}?_t=${timestamp}`;
@@ -48,7 +45,6 @@ function* syncProfileSaga() {
     }
 }
 
-// Worker Saga: Update profile data
 function* updateProfileSaga(action) {
     try {
         const { formData, onSuccess, onFailure } = action.payload;

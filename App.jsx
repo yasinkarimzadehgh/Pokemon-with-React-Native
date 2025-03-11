@@ -1,5 +1,5 @@
-import React from "react";
-import { Provider } from "react-redux";
+import React, { useEffect } from "react";
+import { Provider, useDispatch } from "react-redux";
 import store from "./src/redux/store";
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -16,8 +16,10 @@ import AbilityDetail from "./src/screen/AbilityDetail";
 import PokemonDetail from "./src/screen/PokemonDetail";
 import Home from "./src/screen/Home";
 import Login from "./src/screen/Login";
-import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
+
 import { useSelector } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setDarkMode, setLightMode } from "./src/redux/theme/themeAction";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -32,12 +34,34 @@ const AbilityDetailStack = () => {
 };
 
 const MainApp = () => {
-  const { theme, isDark } = useTheme();
+  const dispatch = useDispatch();
+
+  const { theme, isDark } = useSelector(state => state.theme);
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const value = await AsyncStorage.getItem('app_theme_mode');
+        console.log(value)
+        if (value == 'dark') {
+          dispatch(setDarkMode());
+        } else {
+          dispatch(setLightMode());
+        }
+      }
+      catch (error) {
+        console.error('Error retrieving data:', error);
+      }
+    };
+    getData()
+  }, [])
 
   if (!isAuthenticated) {
     return <Login />;
   }
+
+
 
   return (
     <SafeAreaProvider>
@@ -97,9 +121,7 @@ const MainApp = () => {
 const App = () => {
   return (
     <Provider store={store}>
-      <ThemeProvider>
-        <MainApp />
-      </ThemeProvider>
+      <MainApp />
     </Provider>
   );
 };
