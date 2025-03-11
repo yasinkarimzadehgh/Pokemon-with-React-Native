@@ -125,6 +125,7 @@ const Home = () => {
             name: "profile.jpg",
         })
 
+        // Dispatch action to update profile
         dispatch(
             updateProfileRequest({
                 formData,
