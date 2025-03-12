@@ -11,6 +11,7 @@ import {
     Alert,
     ScrollView,
     KeyboardAvoidingView,
+    useColorScheme,
 } from "react-native"
 import { launchImageLibrary } from "react-native-image-picker"
 import { useDispatch, useSelector } from "react-redux"
@@ -20,7 +21,7 @@ import Icon from "react-native-vector-icons/MaterialIcons"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { setDarkMode, setLightMode } from "../redux/theme/themeAction"
 
-const ThemeButton = ({ label, active, onPress }) => {
+const ThemeButton = ({ label, active, onPress, style }) => {
     const { theme } = useSelector(state => state.theme);
 
     return (
@@ -31,6 +32,7 @@ const ThemeButton = ({ label, active, onPress }) => {
                     backgroundColor: active ? theme.primary : theme.card,
                     borderColor: active ? theme.primary : theme.border,
                 },
+                style,
             ]}
             onPress={onPress}
         >
@@ -46,6 +48,9 @@ const Home = () => {
     const [username, setUsername] = useState("")
     const [themeMode, setLocalThemeMode] = useState("light")
     const [localPicProfile, setLocalPicProfile] = useState(null)
+
+
+    const systemTheme = useColorScheme();
 
     const dispatch = useDispatch()
     const {
@@ -208,6 +213,26 @@ const Home = () => {
         },
     }
 
+    const handleLightMode = () => {
+        dispatch(setLightMode())
+        setLocalThemeMode("light")
+    }
+
+    const handleDarkMode = () => {
+        dispatch(setDarkMode())
+        setLocalThemeMode("dark")
+    }
+
+
+    const handleSystemThemeMode = () => {
+        setLocalThemeMode("system")
+        if (systemTheme === "dark") {
+            dispatch(setDarkMode())
+        } else {
+            dispatch(setLightMode())
+        }
+    }
+
     return (
         <KeyboardAvoidingView style={[styles.container, dynamicStyles.container]}>
             <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
@@ -248,8 +273,10 @@ const Home = () => {
                 <View style={styles.themeContainer}>
                     <Text style={[styles.themeLabel, dynamicStyles.themeLabel]}>Choose Theme</Text>
                     <View style={styles.themeButtonContainer}>
-                        <ThemeButton label="Light" active={themeMode === "light"} onPress={() => setLocalThemeMode("light")} />
-                        <ThemeButton label="Dark" active={themeMode === "dark"} onPress={() => setLocalThemeMode("dark")} />
+                        <ThemeButton style={styles.ThemeButtonCh1} label="Light" active={themeMode === "light"} onPress={() => handleLightMode()} />
+                        <ThemeButton style={styles.ThemeButtonCh2} label="Dark" active={themeMode === "dark"} onPress={() => handleDarkMode()} />
+                        <ThemeButton style={styles.ThemeButtonCh3} label="System theme" active={themeMode === "system"}
+                            onPress={() => handleSystemThemeMode()} />
                     </View>
                 </View>
 
@@ -341,11 +368,19 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     themeButton: {
-        flex: 1,
         padding: 12,
         marginHorizontal: 5,
         borderWidth: 1,
         borderRadius: 10,
+    },
+    ThemeButtonCh1: {
+        flex: 1,
+    },
+    ThemeButtonCh2: {
+        flex: 1,
+    },
+    ThemeButtonCh3: {
+        flex: 3,
     },
     themeButtonText: {
         textAlign: "center",
